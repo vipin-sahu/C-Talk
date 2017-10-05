@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CTalk-home</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/font-awesome.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+	<nav>
+		<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+			<div class="navbar-header" >
+				<a href="/" class="home" id="nav">Home</a>
+            </div>
+            <div class="collapse navbar-collapse navbar-right">
+                <ul class="nav navbar-nav">
+               		<li class="notsignedin"><a href="login" id="nav">Sign in</a></li>9
+	                <li class="signedin"><a href="/questions" id="nav">Questions List</a></li>
+	                <li class="signedin"><a href="/addQuestion" id="nav">New Question</a></li>
+	                <li class="signedin">
+	                	<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="name" id="nav"></span><b class="caret"></b></a>
+                		<ul class="dropdown-menu multi-level" id="nav">
+               				<li><a class="profile" href="/profile">Profile/Settings</a></li>
+               				<li><a class="logout" href="/logout">Log Out</a></li>
+               			</ul>
+                    </li>
+                </ul>
+            </div>
+		</div>
+	</nav>
+	<br><br><br><br>
+
+
+
+	<div class="container ">
+		<div class="question-wrapper">
+			<div class="question"></div><br>
+			<div class="question-detail"></div>
+			<div class="question-tag"></div>
+		</div><br>
+    <textarea class="span6 form-control ans" rows="4"	 placeholder="New Answer" ></textarea><br>
+		<div class="btn btn-info submit">Submit</div><br><br>
+		<div class="answer-list">
+		</div>
+	</div>
+
+
+
+	<script src="/js/jquery-2.1.4.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+
+<script >
+$(document).ready(function(){
+	var ID;
+	$.ajax({
+		url: '/getcookie',
+		type: 'GET',
+		dataType: 'json'
+	})
+	.done(function(c) {
+		console.log(c);
+		if(c.ID){
+			ID=c.ID;
+			$(".notsignedin").css('display','none');
+			$(".signedin").css('display', 'initial');
+			$(".name").html(c.name);
+			console.log(getQueryString('qID'));
+			$.ajax({
+				url: '/api/questionDetail/'+getQueryString('qID'),
+				type: 'GET',
+				dataType: 'json'
+			})
+			.done(function(data) {
+				console.log(data);
+				$(".question").html('<a class="colo" href="/question?qID='+data._id+'"><h3>'+data.question+'</h3></a>');
+				$(".question-detail").html(data.detail);
+				$(".question-tag").html(data.tag);
+			});
+			$.ajax({
+				url: '/api/answers/'+getQueryString('qID'),
+				type: 'GET',
+				dataType: 'json'
+			})
+			.done(function(ans) {
+				for(i in ans){
+					getDetail(ans[i]);
+					//$(".ans-list").append("<div class='wrapper'>By "+ans[i].userID+"<br>"+ans[i].ans+"</div><br>");
+				}
+			});
+		}
+	});
+	function getDetail(ans){
+		console.log(ans);
+		$.ajax({
+			url:'/api/getUpvotesNo/'+ans._id,
+			type:'GET'
+		})
+		.done(function(upvotes){
+			$.ajax({
+				url:'/api/getDownvotesNo/'+ans._id,
+				type:'GET'
+			})
+			.done(function(downvotes){
+				console.log(downvotes);
+				$(".answer-list").prepend("<div class='wrapper'><div class='ans-wrapper'>By "+ans.userID+"<br>"+ans.answer+"</div>"+
+				"<span class='upvote-count up"+ans._id+"'>"+upvotes.count+"</span><span id='"+ans._id+"' class='upvote-btn btn btn-info'>Upvote</span>"+
+				"<span class='downvote-count down"+ans._id+"'>"+downvotes.count+"</span><span id='"+ans._id+"' class='downvote-btn btn btn-info'>Downvote</span>"+
+				"</div><br>");
+			});
+		})
+	}
+
+	$(".answer-list").on('click','.upvote-btn',function(){
+		var ansID=$(this).attr('id');
+			$.ajax({
+				url:'/api/upvote/'+ansID,
+				type:'GET'
+			})
+			.done(function(){
+				$.ajax({
+					url:'/api/getUpvotesNo/'+ansID,
+					type:'GET'
+				})
+				.done(function(ne){
+					$(".up"+ansID).html(ne.count);
+				})
+			})
+	});
+	$(".answer-list").on('click','.downvote-btn',function(){
+		var ansID=$(this).attr('id');
+			$.ajax({
+				url:'/api/downvote/'+ansID,
+				type:'GET'
+			})
+			.done(function(){
+				$.ajax({
+					url:'/api/getDownvotesNo/'+ansID,
+					type:'GET'
+				})
+				.done(function(ne){
+					$(".down"+ansID).html(ne.count);
+				})
+			})
+	});
+	var getQueryString = function ( field, url ) {
+    var href = url ? url : window.location.href;
+    var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+    var string = reg.exec(href);
+    return string ? string[1] : null;
+};
+$(".submit").on('click',function(){
+	var id=getQueryString('qID');
+	var str='{"questionID":"'+id+'","answer":"'+$(".ans").val()+'","ID":"'+ID+'"}';
+	console.log(str);
+
+	$.ajax({
+		url: '/api/postAnswer',
+		type: 'POST',
+		data: str,
+		contentType: 'application/json'
+	})
+	.done(function(data) {
+		console.log(data);
+		window.location.reload();
+	});
+});
+	$(".logout").on('click', function() {
+		$.ajax({
+			url: '/logout',
+			type: 'GET',
+		})
+		.done(function() {
+			$(".notsignedin").css('display','initial');
+			$(".signedin").css('display', 'none');
+		})
+	});
+});
+</script>
+</body>
+</html>

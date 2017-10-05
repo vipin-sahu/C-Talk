@@ -1,0 +1,66 @@
+.delete,.nav > .signedin{
+	display: none;
+}
+
+.navbar-header{
+	padding-top:10px;
+	padding-left:8%;
+	padding-right:8%;
+}
+.navbar{
+	padding:5px;
+  /*background-color: #1ab188;*/
+	background-color: rgb(23,155,119);
+	border-bottom:1px solid #ddd;
+	box-shadow:0 3px 2px -2px rgba(200,200,200,0.2);
+}
+#nav {
+  text-decoration: none;
+	color:white;
+	font-size:20px;
+	margin:0px;
+}
+.btn-info{
+  background-color: rgb(26, 177, 136);
+	border:0px;
+	border-radius: 0px;
+}
+.btn-info:hover,.btn-info:focus,.btn-info:active:focus,.btn-info:active:hover, .btn-info.active:hover, .btn-info:active:focus,
+ .btn-info.active:focus, .btn-info:active.focus, .btn-info.active.focus{
+background-color: rgb(23,155,119);
+border:0px;
+}
+.jumbotron{
+	margin-left: 20%;
+	margin-right: 20%;
+}
+body{
+		background-color:rgba(160,179,176,0.1);
+}
+.colo,.colo:active,.colo:hover,.colo:focus{
+	color:rgb(26, 177, 136);
+}
+.wrapper{
+	background-color:white;
+	cursor: pointer;
+  border-radius: 4px;
+	padding:3REM;
+}
+
+.wrapper:hover{
+	box-shadow:0 4px 10px 4px rgba(19, 35, 47, 0);
+}
+.caret{
+	color:white;
+}
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus{
+	background-color:rgb(26, 177, 136);
+}
+.upvote-btn,.downvote-btn{
+	margin-left:5px;
+	margin-right:15px;
+}
+/*.in{
+	width:800px;
+	height: 200px;
+}*/

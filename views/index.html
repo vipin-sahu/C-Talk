@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CTalk-home</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/font-awesome.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/styleindex.css">
+</head>
+
+<body>
+
+	<nav>
+		<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+			<div class="navbar-header" >
+				<a href="/" class="home" id="nav">Home</a>
+            </div>
+            <div class="collapse navbar-collapse navbar-right">
+                <ul class="nav navbar-nav">
+               		<li class="notsignedin"><a href="login" id="nav">Sign in</a></li>9
+	                <li class="signedin"><a href="/questions" id="nav">Questions List</a></li>
+	                <li class="signedin"><a href="/addQuestion" id="nav">New Question</a></li>
+	                <li class="signedin">
+	                	<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="name" id="nav"></span><b class="caret"></b></a>
+                		<ul class="dropdown-menu multi-level" id="nav">
+               				<li><a class="profile" href="/profile">Profile/Settings</a></li>
+               				<li><a class="logout" href="/logout">Log Out</a></li>
+               			</ul>
+                    </li>
+                </ul>
+            </div>
+		</div>
+	</nav>
+	<br><br><br><br>
+
+
+
+	<div class="container feed">
+	</div>
+
+
+
+	<script src="/js/jquery-2.1.4.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+
+<script >
+$(document).ready(function(){
+	$.ajax({
+		url: '/getcookie',
+		type: 'GET',
+		dataType: 'json'
+	})
+	.done(function(c) {
+		console.log(c);
+		if(c.ID){
+			$(".notsignedin").css('display','none');
+			$(".signedin").css('display', 'initial');
+			$(".name").html(c.name);
+			$.ajax({
+				url: '/api/feed',
+				type: 'GET'
+			})
+			.done(function(answers) {
+				for (i in answers){
+					//console.log(answers[i]);
+					getDetail(answers[i]);
+				}
+			});
+		}
+		else {
+			window.location="/login";
+		}
+	});
+
+function getDetail(ans){
+	$.ajax({
+		url:'/api/questionDetail/'+ans.questionID,
+		type:'GET'
+	})
+	.done(function(quest){
+		console.log(ans.questionID);
+		console.log(quest);
+		$.ajax({
+			url:'/api/getUpvotesNo/'+ans._id,
+			type:'GET'
+		})
+		.done(function(upvotes){
+			$.ajax({
+				url:'/api/getDownvotesNo/'+ans._id,
+				type:'GET'
+			})
+			.done(function(downvotes){
+				console.log(downvotes);
+				$(".feed").prepend("<div class='wrapper'><a class='colo' href='/question?qID="+quest._id+"'><h3>"+quest.question+"</h3></a><div class='question-detail'>"+quest.detail+
+				"</div><div class='question-tag'>"+quest.tag+"</div><div class='ans-wrapper'>By "+ans.userID+"<br>"+ans.answer+"</div>"+
+				"<span class='upvote-count up"+ans._id+"'>"+upvotes.count+"</span><span id='"+ans._id+"' class='upvote-btn btn btn-info'>Upvote</span>"+
+				"<span class='downvote-count down"+ans._id+"'>"+downvotes.count+"</span><span id='"+ans._id+"' class='downvote-btn btn btn-info'>Downvote</span>"+
+				"</div><br>");
+			});
+		})
+	});
+}
+	$(".feed").on('click','.upvote-btn',function(){
+		var ansID=$(this).attr('id');
+			$.ajax({
+				url:'/api/upvote/'+ansID,
+				type:'GET'
+			})
+			.done(function(){
+				$.ajax({
+					url:'/api/getUpvotesNo/'+ansID,
+					type:'GET'
+				})
+				.done(function(ne){
+					$(".up"+ansID).html(ne.count);
+				})
+			})
+	});
+	$(".feed").on('click','.downvote-btn',function(){
+		var ansID=$(this).attr('id');
+			$.ajax({
+				url:'/api/downvote/'+ansID,
+				type:'GET'
+			})
+			.done(function(){
+				$.ajax({
+					url:'/api/getDownvotesNo/'+ansID,
+					type:'GET'
+				})
+				.done(function(ne){
+					$(".down"+ansID).html(ne.count);
+				})
+			})
+	});
+
+	$(".logout").on('click', function() {
+		$.ajax({
+			url: '/logout',
+			type: 'GET',
+		})
+		.done(function() {
+			$(".notsignedin").css('display','initial');
+			$(".signedin").css('display', 'none');
+		})
+	});
+});
+</script>
+</body>
+</html>
